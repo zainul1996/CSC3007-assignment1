@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- JS IMPORTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+
+    <!-- CSS IMPORTS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- import d3 -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <title>SG PSI Viz</title>
+    <style>
+        /* on hover .north, highlight it */
+        /* .north:hover~.north {
+            background-color: #f7f7f7
+        } */
+
+        .top-half {
+            background-color: #eeeeee !important;
+        }
+
+        #timestampP {
+            margin-bottom: 0.2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12 top-half">
+                <div class="row align-items-start">
+                    <div class="col-2"></div>
+                    <div class="col-2">
+                        <img src="images/PSI.png" class="img-fluid">
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center">
+                            <img id="base-map" src="images/base-map.png" class="img-fluid">
+                        </div>
+                        <p id="timestampP">Last updated: <span id="timstampField">fetching..</span></p>
+                    </div>
+                    <div class="col-2">
+                        <img src="images/VIS.png" class="img-fluid">
+                    </div>
+                    <div class="col-2"></div>
+                </div>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 bottom-half justify-content-center">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="metric">Metric</th>
+                            <th class="national">National</th>
+                            <th class="central">Central</th>
+                            <th class="north">North</th>
+                            <th class="south">South</th>
+                            <th class="east">East</th>
+                            <th class="west">West</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $.getJSON("https://api.data.gov.sg/v1/environment/psi", function (data) {
+        let psiData = data.items[0].readings;
+        let tableBody = $("tbody");
+        let updated_timestamp = data.items[0].update_timestamp
+        let relative_time = moment(updated_timestamp).fromNow()
+
+        let relative_time_number = relative_time.match(/\d+/g);
+
+        relative_time_number < 1 ? relative_time = "Just now" : relative_time = relative_time
+
+        $("#timstampField").text(relative_time);
+        let keys = Object.keys(psiData);
+        for (let i = 0; i < keys.length; i++) {
+            let row = $("<tr>");
+            let key = keys[i];
+            let value = psiData[key];
+            let metric = $("<td>").text(key).addClass("metric")
+            let national = $("<td>").text(value.national).addClass("national");
+            let central = $("<td>").text(value.central).addClass("central");
+            let north = $("<td>").text(value.north).addClass("north").hover(function () {
+                $(this).css("background-color", "#f7f7f7");
+            }, function () {
+                $('.north').css("background-color", "white");
+            });
+            let south = $("<td>").text(value.south).addClass("south");
+            let east = $("<td>").text(value.east).addClass("east");
+            let west = $("<td>").text(value.west).addClass("west");
+            row.append(metric, national, central, north, south, east, west);
+            tableBody.append(row);
+        }
+    });
+
+    // if any element with class 'north' is hovered, highlight all elements with class 'north'
+    // $(".north").hover(function () {
+    //     $(".north").css("background-color", "#f7f7f7");
+    // }, function () {
+    //     $(".north").css("background-color", "white");
+    // });
+
+    // function highlightNorth() {
+    //     $(".north").css("background-color", "#f7f7f7");
+    // }
+    // function unhighlightNorth() {
+    //     $(".north").css("background-color", "white");
+    // }
+
+    // overlay MRT.png on top of base-map.png
+    let overlay = d3.select("#base-map");
+    let overlayImage = overlay.append("svg:image")
+        .attr("xlink:href", "MRT.png")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("x", 0)
+        .attr("y", 0);
+
+    // 
+
+
+
+
+
+
+</script>
+
+</html>
